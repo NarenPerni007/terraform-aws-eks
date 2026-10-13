@@ -99,7 +99,7 @@ kubectl get nodes
 | `vpc_cidr` | CIDR block for the VPC | `string` | `"10.0.0.0/16"` |
 | `az_count` | Number of AZs (and public/private subnet pairs) | `number` | `3` |
 | `single_nat_gateway` | `true` = one NAT GW (cheaper, SPOF); `false` = one per AZ | `bool` | `false` |
-| `cluster_version` | Kubernetes version for the EKS control plane | `string` | `"1.29"` |
+| `cluster_version` | Kubernetes version for the EKS control plane | `string` | `"1.35"` |
 | `cluster_endpoint_public_access_cidrs` | CIDRs allowed to reach the public API endpoint | `list(string)` | `["0.0.0.0/0"]` |
 | `admin_role_arn` | IAM principal ARN to grant cluster-admin (empty = skip) | `string` | `""` |
 | `node_instance_types` | EC2 instance types for the node group | `list(string)` | `["t3.medium"]` |
@@ -139,3 +139,9 @@ This removes the cluster, node group, NAT gateways (and their Elastic IPs), and 
 - **`API_AND_CONFIG_MAP` authentication mode.** Uses the modern EKS Access Entry API for RBAC while still honoring the legacy `aws-auth` ConfigMap, so existing tooling keeps working. The optional `admin_role_arn` variable wires up a cluster-admin access entry without touching YAML.
 - **API + audit control-plane logging** is enabled by default for a usable audit trail.
 - **Recommended next step: IRSA.** For production, add an `aws_iam_openid_connect_provider` for the cluster's OIDC issuer and use IAM Roles for Service Accounts so pods get scoped AWS permissions instead of sharing the node role. Deliberately left out here to keep the repo dependency-free (AWS provider only).
+
+## Upgrading
+
+- **EKS 1.29 to 1.35.** The default `cluster_version` is 1.35. On a live cluster, EKS only allows one minor version jump at a time, so an existing 1.29 cluster goes 1.29 -> 1.30 -> 1.31 -> 1.32 -> 1.33 -> 1.34 -> 1.35, upgrading the control plane first and the node group after each step. Check the CoreDNS, kube-proxy, and VPC CNI addons for version compatibility before each jump. EKS standard support for 1.35 runs through March 27, 2027.
+- **AWS provider 5.x to 6.x.** The provider constraint is now `~> 6.0`. Run `terraform init -upgrade` to pull the new major version, and review the plan for any resource replacements before applying.
+- **State locking.** The S3 backend example now uses native `use_lockfile` (Terraform 1.10+) instead of a DynamoDB lock table. Existing state that used a DynamoDB table keeps working; new setups do not need the table.
