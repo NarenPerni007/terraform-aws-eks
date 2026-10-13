@@ -1,5 +1,5 @@
 # ==============================================================================
-# terraform-aws-eks — production-style AWS VPC + EKS with managed node groups
+# terraform-aws-eks - production-style AWS VPC + EKS with managed node groups
 #
 # Provisions:
 #   * VPC with public and private subnets across N availability zones
@@ -55,7 +55,7 @@ resource "aws_internet_gateway" "this" {
 }
 
 # ------------------------------------------------------------------------------
-# Subnets — public for load balancers and NAT gateways, private for EKS nodes
+# Subnets - public for load balancers and NAT gateways, private for EKS nodes
 #
 # Public subnets take the first `az_count` /24s, private subnets the next
 # `az_count` /24s out of the VPC CIDR. The kubernetes.io tags let the AWS
@@ -161,7 +161,7 @@ resource "aws_route_table_association" "private" {
 }
 
 # ------------------------------------------------------------------------------
-# IAM — EKS cluster role
+# IAM - EKS cluster role
 # ------------------------------------------------------------------------------
 
 resource "aws_iam_role" "cluster" {
@@ -185,7 +185,7 @@ resource "aws_iam_role_policy_attachment" "cluster_AmazonEKSClusterPolicy" {
 }
 
 # ------------------------------------------------------------------------------
-# IAM — EKS worker node role
+# IAM - EKS worker node role
 # ------------------------------------------------------------------------------
 
 resource "aws_iam_role" "node" {
@@ -319,7 +319,7 @@ resource "aws_eks_cluster" "this" {
 }
 
 # ------------------------------------------------------------------------------
-# EKS managed node group (private subnets — nodes get no public IPs)
+# EKS managed node group (private subnets - nodes get no public IPs)
 # ------------------------------------------------------------------------------
 
 resource "aws_eks_node_group" "this" {
@@ -350,7 +350,7 @@ resource "aws_eks_node_group" "this" {
   tags = local.common_tags
 
   # The node group fails to join the cluster if these policies are not yet
-  # attached — the explicit depends_on is required by the AWS provider.
+  # attached - the explicit depends_on is required by the AWS provider.
   depends_on = [
     aws_iam_role_policy_attachment.node_AmazonEKSWorkerNodePolicy,
     aws_iam_role_policy_attachment.node_AmazonEKS_CNI_Policy,

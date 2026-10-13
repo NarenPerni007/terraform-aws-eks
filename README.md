@@ -78,7 +78,7 @@ cd terraform-aws-eks
 #    terraform apply -var="cluster_name=my-cluster" -var="region=us-west-2" \
 #                    -var="admin_role_arn=arn:aws:iam::123456789012:role/Admin"
 
-# 3. Plan and apply (takes ~15-20 minutes — EKS control plane is the slow part)
+# 3. Plan and apply (takes ~15-20 minutes - EKS control plane is the slow part)
 terraform init
 terraform plan
 terraform apply
@@ -129,12 +129,12 @@ kubectl get nodes
 terraform destroy
 ```
 
-This removes the cluster, node group, NAT gateways (and their Elastic IPs), and the VPC. Note: EKS-managed load balancers created by in-cluster Services are **not** managed by this Terraform — delete those Kubernetes resources first or they will leave orphaned AWS resources behind.
+This removes the cluster, node group, NAT gateways (and their Elastic IPs), and the VPC. Note: EKS-managed load balancers created by in-cluster Services are **not** managed by this Terraform - delete those Kubernetes resources first or they will leave orphaned AWS resources behind.
 
 ## Design decisions
 
 - **Private worker nodes.** Nodes get no public IPs; all egress goes through NAT. This shrinks the attack surface and matches how most regulated production environments run EKS.
-- **One NAT gateway per AZ (default).** Keeps each AZ's egress independent — no cross-AZ data charges and no single point of failure. The trade-off is cost (~$33/mo per NAT gateway plus data processing). Set `single_nat_gateway = true` for dev/test to collapse to one NAT.
+- **One NAT gateway per AZ (default).** Keeps each AZ's egress independent - no cross-AZ data charges and no single point of failure. The trade-off is cost (~$33/mo per NAT gateway plus data processing). Set `single_nat_gateway = true` for dev/test to collapse to one NAT.
 - **Managed node groups over self-managed.** AWS handles AMI patching, rolling updates, and graceful draining. Less undifferentiated heavy lifting than running your own Auto Scaling groups.
 - **`API_AND_CONFIG_MAP` authentication mode.** Uses the modern EKS Access Entry API for RBAC while still honoring the legacy `aws-auth` ConfigMap, so existing tooling keeps working. The optional `admin_role_arn` variable wires up a cluster-admin access entry without touching YAML.
 - **API + audit control-plane logging** is enabled by default for a usable audit trail.
